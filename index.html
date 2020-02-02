@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+
+/* Add shadow effect to chart. If you don't like it, get rid of it. */
+svg {
+    -webkit-filter: drop-shadow( 0px 3px 3px rgba(0,0,0,.3) );
+    filter: drop-shadow( 0px 3px 3px rgba(0,0,0,.25) );
+}
+
+/*Styling for the lines connecting the labels to the slices*/
+polyline{
+    opacity: .3;
+    stroke-width: 2px;
+    fill: none;
+}
+
+/* Make the percentage on the text labels bold*/
+.labelName tspan {
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* In biology we generally italicise species names. */
+.labelName {
+    font-size: 0.9em;
+    font-style: italic;
+}
+  </style>
+</head>
+
+<body> 
+  <script>
+    var svg = d3.select("body").append("svg")
+      .attr("width", 960)
+      .attr("height", 500)
+      .append("g");
+    
+    svg.append("g")
+			.attr("class", "slices");
+    svg.append("g")
+      .attr("class", "labels");
+    svg.append("g")
+      .attr("class", "lines");
+    var width = 500;
+    var height = 400;
+    var radius = Math.min(width, height)/2;
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var data = [26,25,10,30];
+    
+    var pie = d3.pie().sort(null).value(da => da);
+    var arc = d3.arc().innerRadius(radius*0.8).outerRadius(radius*0.3);
+    
+     var outerArc = d3.arc()
+                .outerRadius(radius*0.9)
+                .innerRadius(radius*0.9);
+     
+    svg.attr("transform", "translate(" + width/2 + "," + height /2 + ")");
+    
+    var g = svg.selectAll(".arc")
+      .data(pie(data))
+    .enter().append("g")
+      .attr("class", "arc");
+
+  g.append("path")
+	.style("fill", (d,i)=> color(i))
+    .transition().delay(function(d,i) {
+	return i * 100; }).duration(100)
+    
+	.attrTween('d', function(d) {
+		var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+		return function(t) {
+			d.endAngle = i(t); 
+			return arc(d)
+			}
+		});
+
+    svg.selectAll('g').on('mouseover', function() {
+      var current = this;  
+      var others = svg.selectAll(".arc").filter(function(el) {
+        return this != current
+      });
+      others.selectAll("path").style('opacity', 0.3);
+    }).on('mouseout', function() {
+      var current = this;
+      d3.select(this)
+        .style('opacity', 1);
+      var others = svg.selectAll(".arc").filter(function(el) {
+        return this != current
+      });
+      others.selectAll("path").style('opacity', 1);
+    })
+
+     var polyline = svg.select('.lines')
+                .selectAll('polyline')
+                .data(pie(data))
+              .enter().append('polyline') .transition()
+	          .delay(500).style('stroke' , (d,i) => color(i))
+                .attr('points', function(d) {
+  
+                    // see label transform function for explanations of these three lines.
+                    var pos = outerArc.centroid(d);
+                    pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+                    return [arc.centroid(d), outerArc.centroid(d), pos]
+                });
+            
+	
+       var label = svg.select('.labels').selectAll('text')
+                .data(pie(data))
+                .enter()
+                .append('text')
+                .attr('dy', '.35em').transition()
+	            .delay(500)
+                .text(function(d) {
+                    return d.data;
+                })
+                .style('fill' , (d,i) => color(i))
+                
+                .attr('transform', function(d) {
+                    var pos = outerArc.centroid(d);
+                    pos[0] = radius * 0.99 * (midAngle(d) < Math.PI ? 1 : -1);
+                    return 'translate(' + pos + ')';
+                })
+                .style('text-anchor', function(d) {
+                    return (midAngle(d)) < Math.PI ? 'start' : 'end';
+                })
+    function midAngle(d) { return d.startAngle + (d.endAngle - d.startAngle) / 2; } 
+        
+  </script> 
+</body>
