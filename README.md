@@ -9,9 +9,12 @@
 <p align="center">
   
   <img src="https://github.com/Maryam0187/Pie-d3/blob/master/Screenshot%20(2).png" width="350">
-  <br></br>
-  
-   # hovering 
+
+</p>
+
+<p align="center">
+    # hovering 
    
-  <img src="https://github.com/Maryam0187/Pie-d3/blob/master/pie.png" width="350" title="hover">
-</p>c
+  
+ <img src="https://github.com/Maryam0187/Pie-d3/blob/master/pie.png" width="350" title="hover">
+  </p>
